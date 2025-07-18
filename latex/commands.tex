@@ -1,0 +1,15 @@
+\newcommand{\formatTasks}[1]{%
+  \begin{highlights}
+    % 1. Cambiar todas las "," por "◊" (símbolo poco usado)
+    \StrSubstitute{#1}{,}{◊}[\step1]%
+    % 2. Cambiar todos los "|" por ","  
+    \StrSubstitute{\step1}{|}{,}[\step2]%
+    % 3. Separar items por "," y procesarlos
+    \renewcommand*{\do}[1]{%
+      % 4. En cada item, cambiar "◊" de vuelta a ","
+      \StrSubstitute{##1}{◊}{,}[\cleanitem]%
+      \item \cleanitem
+    }%
+    \expandafter\docsvlist\expandafter{\step2}%
+  \end{highlights}
+}
