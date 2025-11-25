@@ -1,0 +1,8 @@
+[project]
+name = "jobot-ai"
+version = "0.1.0"
+description = "Scrapes jobs and compare with your resume using AI to find the best matches"
+requires-python = ">=3.14"
+dependencies = [
+    "boto3>=1.41.3",
+]

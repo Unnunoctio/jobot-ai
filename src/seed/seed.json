@@ -1,0 +1,26 @@
+[
+    {
+        "id": "linkedin",
+        "enabled": true,
+        "lambda_name": "LinkedinScraper",
+        "keywords": [
+            "python",
+            "aws"
+        ],
+        "locations": [
+            "Chile",
+            "Remote"
+        ]
+    },
+    {
+        "id": "indeed",
+        "enabled": true,
+        "lambda_name": "IndeedScraper",
+        "keywords": [
+            "backend"
+        ],
+        "locations": [
+            "Remote"
+        ]
+    }
+]
