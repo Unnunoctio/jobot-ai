@@ -1,26 +1,72 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Jobot AI
 
+Parameters:
+  ProxyEndpoint:
+    Type: String
+    Description: Proxy endpoint to pass cloudflare challenge
+
 Resources:
   ########################################
-  # DATABASE CONFIGURATION
+  # DATABASE SPIDER CONFIGURATION
   ########################################
 
-  JobotAIConfigTable:
+  SpiderConfigTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: JobotAIConfigTable
+      TableName: SpiderConfigTable
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: id 
+        - AttributeName: id
           KeyType: HASH
       SSESpecification:
         SSEEnabled: true
 
+  ########################################
+  # DATABASE SEEN OFFERS
+  ########################################
+
+  SeenOffersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SeenOffersTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: url
+          AttributeType: S
+      KeySchema:
+        - AttributeName: url
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  ########################################
+  # SPIDER LAMBDAS
+  ########################################
+
+  JobotAILaborumSpiderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-LaborumSpiderFunction
+      CodeUri: src/core/spiders/laborum
+      Handler: index.handler
+      Runtime: python3.14
+      Timeout: 30
+      MemorySize: 512
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SpiderConfigTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref SeenOffersTable
+      Environment:
+        Variables:
+          CONFIG_TABLE: !Ref SpiderConfigTable
+          SEEN_OFFERS_TABLE: !Ref SeenOffersTable
+          PROXY_ENDPOINT: !Ref ProxyEndpoint
   ########################################
   # IAM POLICY
   ########################################
