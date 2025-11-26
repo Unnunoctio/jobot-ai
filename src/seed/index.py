@@ -2,7 +2,7 @@ import json
 
 import boto3
 
-TABLE_NAME = "JobotAIConfigTable"
+TABLE_NAME = "SpiderConfigTable"
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(TABLE_NAME)

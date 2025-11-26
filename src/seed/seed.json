@@ -1,26 +1,25 @@
 [
-    {
-        "id": "linkedin",
-        "enabled": true,
-        "lambda_name": "LinkedinScraper",
-        "keywords": [
-            "python",
-            "aws"
-        ],
-        "locations": [
-            "Chile",
-            "Remote"
-        ]
-    },
-    {
-        "id": "indeed",
-        "enabled": true,
-        "lambda_name": "IndeedScraper",
-        "keywords": [
-            "backend"
-        ],
-        "locations": [
-            "Remote"
-        ]
-    }
+	{
+		"id": "laborum",
+		"enabled": true,
+		"lambda_name": "JobotAI-LaborumSpiderFunction",
+		"keywords": [
+			"FullStack Developer",
+			"Backend Developer",
+			"Frontend Developer",
+			"Software Engineer",
+			"Software Developer",
+			"Software Architect",
+			"Software Architect Engineer",
+			"Software Architect Developer"
+		],
+		"params": {
+			"filtros": [
+				{
+					"id": "dias_fecha_publicacion",
+					"value": "publicacion-hoy"
+				}
+			]
+		}
+	}
 ]
