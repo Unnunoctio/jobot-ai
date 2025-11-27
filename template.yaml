@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Jobot AI
 
@@ -6,6 +6,47 @@ Parameters:
   ProxyEndpoint:
     Type: String
     Description: Proxy endpoint to pass cloudflare challenge
+
+  AiProvider:
+    Type: String
+    Description: AI provider to use for the score offers
+    Default: OPENAI
+    AllowedValues:
+      - OPENAI
+      - ANTHROPIC
+      - DEEPSEEK
+
+  AiApiKey:
+    Type: String
+    Description: AI API key
+
+  AiModel:
+    Type: String
+    Description: AI model to use
+    Default: gpt-4o
+
+  S3BucketName:
+    Type: String
+    Description: S3 bucket name
+    Default: jobot-ai
+
+  UserExperienceFile:
+    Type: String
+    Description: User experience file name
+    Default: user_experience.txt
+
+  MinScore:
+    Type: String
+    Description: Minimum score to consider an offer
+    Default: "70"
+
+  ResendApiKey:
+    Type: String
+    Description: API key for resend app to send emails
+
+  EmailSender:
+    Type: String
+    Description: Email to send the offers
 
 Resources:
   ########################################
@@ -45,6 +86,20 @@ Resources:
         SSEEnabled: true
 
   ########################################
+  # S3 BUCKET FOR USER EXPERIENCE
+  ########################################
+
+  JobotAIUserExperienceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ########################################
   # SPIDER LAMBDAS
   ########################################
 
@@ -55,18 +110,212 @@ Resources:
       CodeUri: src/core/spiders/laborum
       Handler: index.handler
       Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          PROXY_ENDPOINT: !Ref ProxyEndpoint
+
+  JobotAIGetOnBoardSpiderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-GetOnBoardSpiderFunction
+      CodeUri: src/core/spiders/getonboard
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 30
+      MemorySize: 1024
+
+  ########################################
+  # PIPELINE LAMBDAS
+  ########################################
+
+  JobotAILoadConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-LoadConfigFunction
+      CodeUri: src/core/pipeline/load_config
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 10
+      MemorySize: 256
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SpiderConfigTable
+      Environment:
+        Variables:
+          CONFIG_TABLE: !Ref SpiderConfigTable
+
+  JobotAIMergeOffersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-MergeOffersFunction
+      CodeUri: src/core/pipeline/merge_offers
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
       Timeout: 30
       MemorySize: 512
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref SpiderConfigTable
-        - DynamoDBReadPolicy:
             TableName: !Ref SeenOffersTable
       Environment:
         Variables:
-          CONFIG_TABLE: !Ref SpiderConfigTable
           SEEN_OFFERS_TABLE: !Ref SeenOffersTable
-          PROXY_ENDPOINT: !Ref ProxyEndpoint
+
+  JobotAIScoreOffersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-ScoreOffersFunction
+      CodeUri: src/core/pipeline/score_offers
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 30
+      MemorySize: 1024
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref SeenOffersTable
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        Variables:
+          SEEN_OFFERS_TABLE: !Ref SeenOffersTable
+          AI_PROVIDER: !Ref AiProvider
+          AI_API_KEY: !Ref AiApiKey
+          AI_MODEL: !Ref AiModel
+          S3_BUCKET_NAME: !Ref S3BucketName
+          USER_EXPERIENCE_FILE: !Ref UserExperienceFile
+          MIN_SCORE: !Ref MinScore
+
+  JobotAISendEmailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-SendEmailFunction
+      CodeUri: src/core/pipeline/send_email
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          RESEND_API_KEY: !Ref ResendApiKey
+          EMAIL_SENDER: !Ref EmailSender
+
+  ########################################
+  # STEP FUNCTION ORCHESTRATOR (load -> spiders -> filter-batch -> score -> send email)
+  ########################################
+
+  JobotAIOrchestrator:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: JobotAI-Orchestrator
+      Definition:
+        Comment: "Load config -> spiders dynamically -> filter-batch results -> score offers -> send email"
+        StartAt: LoadConfig
+        TimeoutSeconds: 60
+        States:
+          LoadConfig:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            OutputPath: $.Payload
+            Parameters:
+              FunctionName: !Ref JobotAILoadConfigFunction
+              Payload: {}
+            Next: RunSpiders
+
+          RunSpiders:
+            Type: Map
+            ItemsPath: $.spiders
+            MaxConcurrency: 5
+            Iterator:
+              StartAt: InvokeSpider
+              States:
+                InvokeSpider:
+                  Type: Task
+                  Resource: arn:aws:states:::lambda:invoke
+                  OutputPath: $.Payload
+                  Parameters:
+                    FunctionName.$: $.lambda_name
+                    Payload:
+                      config.$: $.config
+                  End: true
+            Next: MergeOffers
+
+          MergeOffers:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            OutputPath: $.Payload
+            Parameters:
+              FunctionName: !Ref JobotAIMergeOffersFunction
+              Payload:
+                offers.$: $
+            Next: RunBatches
+
+          RunBatches:
+            Type: Map
+            ItemsPath: $.batches
+            MaxConcurrency: 5
+            Iterator:
+              StartAt: InvokeBatch
+              States:
+                InvokeBatch:
+                  Type: Task
+                  Resource: arn:aws:states:::lambda:invoke
+                  OutputPath: $.Payload
+                  Parameters:
+                    FunctionName: !Ref JobotAIScoreOffersFunction
+                    Payload:
+                      batch.$: $
+                  End: true
+            Next: SendEmail
+
+          SendEmail:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: !Ref JobotAISendEmailFunction
+              Payload:
+                new_offers.$: $
+            End: true
+
+      Role: !GetAtt JobotAIOrchestratorRole.Arn
+
+  ########################################
+  # IAM ROLES
+  ########################################
+
+  JobotAIOrchestratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StepFnLambdaInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: "*"
+
   ########################################
   # IAM POLICY
   ########################################
