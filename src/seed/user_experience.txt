@@ -1,0 +1,35 @@
+Sobre mí
+'Soy un Analista de Sistemas y Desarrollador Full Stack con experiencia en diversos sectores, desde el ámbito financiero hasta proyectos de investigación académica. Mi perfil combina sólidas habilidades técnicas en desarrollo web moderno con capacidades analíticas para el diseño de sistemas críticos y la gestión de requerimientos complejos.'
+
+Experiencia
+[5]{company,position,period,tasks}:
+    Banco Central de Chile,Analista de Requerimientos,May 2025 - Jul 2025,'1.Elaboré especificaciones técnicas, requerimientos funcionales y storyboards de la plataforma crítica. 2.Aplico metodologías de diseño centrado en el usuario para interfaces del sector financiero. 3.Coordino trabajo interdisciplinario con equipos de operaciones para asegurar usabilidad y adopción.|Garantizo coherencia, escalabilidad y continuidad operacional del sistema.'
+    Banco Central de Chile,Práctica Profesional como Analista de Requerimientos,Ene 2025 - Abr 2025,'1.Definí sistema integral para manejo automatizado de pagos de intereses y operaciones financieras. 2.Diseñé proyecto para administración completa del ciclo de vida de documentos operacionales. 3.Implementé solución que automatiza obtención y conciliación de documentos de contrapartes, mejorando significativamente la eficiencia operacional diaria.'
+    Pontificia Universidad Católica de Valparaíso,Ayudante de Investigación Escuela de Periodismo,Jul 2024 - Presente,'1.Sistemas automatizados para recolección de ofertas laborales desde múltiples plataformas web. 2.Herramientas de extracción masiva de contenido periodístico de medios chilenos. 3.Sistemas de extracción de datos de Twitter con filtros por palabras clave, cuentas y rangos temporales.'
+    Fondef ID23I10113 - Gobierno de Chile,Analista de Requerimientos,Sep 2023 - Jun 2025,'1.Definí alcance, objetivos y especificaciones técnicas del sistema de gestión de pavimentos aeroportuarios. 2.Elaboré requerimientos funcionales y no funcionales.|Desarrollé Statement of Work para procesos de licitación. 3.Superviso y ejecuto revisión técnica del desarrollo realizado por consultora externa.'
+    Napsis LATAM,Práctica de Desarrollador Web,Sep 2022 - Ene 2023,'1.Diseñé e implementé interfaces responsive y accesibles que mejoraron la usabilidad empresarial. 2.Desarrollé componentes reutilizables siguiendo principios de design systems para garantizar consistencia y eficiencia. 3.Optimicé rendimiento web y experiencia de usuario en aplicaciones de nivel empresarial.'
+
+Educación
+[3]{institution,title,period,topics}:
+    Pontificia Universidad Católica de Valparaíso,Licenciado en Ciencias de la Ingenieria,2025,''
+    Pontificia Universidad Católica de Valparaíso,Ingeniería Civil en Informática,2019 - 2025,''
+    Udemy,Curso de React,2021,'Curso de React, profundizando en Context API, MERN stack, Hooks, Firestore, JWT, Testing, Autenticaciones, Deployments, operaciones CRUD, Múltiples Rutas, Redux y más.'
+
+Certificaciones
+[1]{institution,title,period,topics}:
+    Cisco Certified Network Associate (CCNA),Introducción a redes,2023,'1.Configurar los routers, los switches y los dispositivos finales para proporcionar acceso a recursos de red locales y remotos y para habilitar la conectividad integral entre dispositivos remotos. 2.Crear esquemas de direccionamiento IPv4 e IPv6 y verifique la conectividad de red entre dispositivos. 3.Configurar una red pequeña con prácticas recomendadas de seguridad. 4.Solucionar problemas de conectividad en una red pequeña.'
+
+Proyectos
+[3]{title,description,technologies}:
+    Rincón del Curao,'Website que recopila los precios de diversas cervezas, destilados y vinos vendidos en Chile. Los datos de los productos se obtienen desde Drinks API, donde los precios se actualizan diariamente desde las a las 9 am hasta las 5 pm hora de Chile.','TypeScript, TailwindCSS, NodeJS, Bun, React, NextJS, MongoDB, GraphQL.'
+    Drinks API,'API REST que maneja diferentes tipos de bebidas alcohólicas, especificando cervezas, licores y vinos. Esta API permite listar y filtrar las diferentes bebidas.','JavaScript, Bun, Hono, MongoDB, API REST.'
+    Github Calendar JSON,'API REST que maneja diferentes tipos de bebidas alcohólicas, especificando cervezas, licores y vinos. Esta API permite listar y filtrar las diferentes bebidas.','JavaScript, NodeJS, NPM.'
+
+Tecnologías
+Lenguajes[9]: HTML,CSS,JavaScript,TypeScript,Python,Java,Julia,C,C++
+EntornosDeEjecucion[2]: NodeJS,Bun
+Frameworks[4]: React,Svelte,NextJS,Astro
+BasesDeDatos[4]: PostgreSQL,Oracle SQL,MySQL,MongoDB
+ArquitecturasDeAPIs[2]: REST,GraphQL
+Tecnologías[6]: Git,GitHub,Docker,VS-Code,Postman,NPM
+TecnologíasAWS[9]: EC2,ECR,ECS,Fargate,Lambda,S3,CloudFront,Amplify,AppSync

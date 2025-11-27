@@ -1,22 +1,55 @@
 import json
 
 import boto3
+from botocore.exceptions import ClientError
 
-TABLE_NAME = "SpiderConfigTable"
+DYNAMODB = boto3.resource("dynamodb")
+CONFIG_TABLE = DYNAMODB.Table("SpiderConfigTable")
 
-dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table(TABLE_NAME)
+S3_CLIENT = boto3.client("s3")
+S3_BUCKET_NAME = "jobot-ai"
 
-resp = table.scan(Limit=1)
-if resp.get("Items"):
-    print("Table already seeded")
-    exit(0)
+def seed_config_table():
+    resp = CONFIG_TABLE.scan(Limit=1)
+    if resp.get("Items"):
+        print("Table already seeded")
+        return
 
-with open("src/seed/seed.json", "r") as f:
-    items = json.load(f)
+    with open("src/seed/seed.json", "r") as f:
+        items = json.load(f)
 
-with table.batch_writer() as batch:
-    for item in items:
-        batch.put_item(Item=item)
+    with CONFIG_TABLE.batch_writer() as batch:
+        for item in items:
+            batch.put_item(Item=item)
 
-print("Seeded successfully")
+    print("Seeded successfully")
+
+def add_user_experience():
+    try:
+        S3_CLIENT.head_bucket(Bucket=S3_BUCKET_NAME)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            region = boto3.session.Session().region_name
+            if region == "us-east-1":
+                S3_CLIENT.create_bucket(Bucket=S3_BUCKET_NAME)
+            else:
+                S3_CLIENT.create_bucket(Bucket=S3_BUCKET_NAME, CreateBucketConfiguration={"LocationConstraint": region})
+        else:
+            print(f"Error al verificar el bucket: {e}")
+
+    try:
+        S3_CLIENT.upload_file(
+            "src/seed/user_experience.txt",
+            S3_BUCKET_NAME,
+            "user_experience.txt",
+            ExtraArgs={"ContentType": "text/plain"}
+        )
+
+        print("User experience added successfully")
+    except ClientError as e:
+        print(f"Error al subir el archivo: {e}")
+
+
+if __name__ == "__main__":
+    seed_config_table()
+    add_user_experience()
