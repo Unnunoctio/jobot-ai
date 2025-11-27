@@ -5,13 +5,7 @@ import os
 from datetime import datetime
 from itertools import chain
 
-import boto3
 from aiohttp import ClientSession
-
-## AWS
-DYNAMO_CLIENT = boto3.client("dynamodb")
-CONFIG_TABLE = boto3.resource("dynamodb").Table(os.getenv("CONFIG_TABLE"))
-SEEN_OFFERS_TABLE = boto3.resource("dynamodb").Table(os.getenv("SEEN_OFFERS_TABLE"))
 
 ## PROXY
 PROXY_ENDPOINT = os.getenv("PROXY_ENDPOINT")
@@ -20,30 +14,21 @@ PROXY_ENDPOINT = os.getenv("PROXY_ENDPOINT")
 BASE_URL = "https://www.laborum.cl/api/avisos/searchV2?pageSize=100&sort=RECIENTES"
 JOB_URL = "https://www.laborum.cl/empleos/"
 
-HEADERS = {
-    "Referer": "https://www.laborum.cl/empleos-busqueda.html?recientes=true",
-    "Content-Type": "application/json",
-    "X-Site-Id": "BMCL"
-}
+HEADERS = {"Referer": "https://www.laborum.cl/empleos-busqueda.html?recientes=true", "Content-Type": "application/json", "X-Site-Id": "BMCL"}
 
 
 def handler(event, context):
-    # TODO: Get spider config from Config Table
-    spider_config = CONFIG_TABLE.get_item(Key={"id": "laborum"})["Item"]
+    # TODO: Get spider config
+    spider_config = event.get("config", {})
+
+    keywords = spider_config.get("keywords", [])
+    params = spider_config.get("params", {})
 
     # TODO: Get offers from Laborum
-    offers = asyncio.run(get_offers(spider_config["keywords"], spider_config["params"]))
+    offers = asyncio.run(get_offers(keywords, params))
 
-    # TODO: Filter new offers
-    new_offers = filter_new_offers(offers)
-
-    # TODO: Return new offers
-    return {
-        "spider": "laborum",
-        "total_offers_found": len(offers),
-        "new_offers_found": len(new_offers),
-        "new_offers": new_offers,
-    }
+    # TODO: Return offers
+    return offers
 
 
 # GET OFFERS
@@ -67,13 +52,8 @@ async def get_offers(keywords: list[str], params: dict):
 
 
 async def _fetch_url(session: ClientSession, url: str, body: dict):
-    proxy_body = {
-        "url": url,
-        "method": "POST",
-        "headers": HEADERS,
-        "data": json.dumps(body)
-    }
-    
+    proxy_body = {"url": url, "method": "POST", "headers": HEADERS, "data": json.dumps(body)}
+
     try:
         async with session.post(PROXY_ENDPOINT, data=json.dumps(proxy_body)) as response:
             if response.status != 200:
@@ -123,24 +103,6 @@ def _format_job(data: dict) -> dict:
         "location": data["localizacion"],
         "modality": data["modalidadTrabajo"],
         "created_at": datetime.strptime(data["fechaPublicacion"], "%d-%m-%Y").strftime("%d-%m-%Y"),
+        "applications": "n/a",
         "description": data["detalle"],
     }
-
-
-# FILTER NEW OFFERS
-def filter_new_offers(offers: list[dict]) -> list[dict]:
-    # Filter offers that are not in seen_offers_table
-    BATCH_SIZE = 100
-    offer_urls = [o["url"] for o in offers]
-    seen_offers = set()
-
-    for i in range(0, len(offers), BATCH_SIZE):
-        chunk = offer_urls[i : i + BATCH_SIZE]
-
-        response = DYNAMO_CLIENT.batch_get_item(RequestItems={SEEN_OFFERS_TABLE.name: {"Keys": [{"url": {"S": url}} for url in chunk]}})
-
-        items = response.get("Responses", {}).get(SEEN_OFFERS_TABLE.name, [])
-        for item in items:
-            seen_offers.add(item["url"]["S"])
-
-    return [o for o in offers if o["url"] not in seen_offers]
