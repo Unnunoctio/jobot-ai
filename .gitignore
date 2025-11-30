@@ -1,8 +1,8 @@
-# Latexmk
-*.aux
-*.fdb_latexmk
-*.fls
-*.log
+# Custom
+.aws-sam
+.python-version
+uv.lock
+samconfig.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
