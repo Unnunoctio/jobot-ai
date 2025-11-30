@@ -18,6 +18,11 @@ def handler(event, context):
     # TODO: Filtrar las ofertas que ya se han visto
     new_offers = filter_new_offers(offers)
 
+    if not new_offers or len(new_offers) == 0:
+        return {
+            "batches": None,
+        }
+
     # TODO: Separar en lotes de 5
     batches = [new_offers[i : i + 5] for i in range(0, len(new_offers), 5)]
 

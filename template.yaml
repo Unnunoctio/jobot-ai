@@ -263,7 +263,18 @@ Resources:
               FunctionName: !Ref JobotAIMergeOffersFunction
               Payload:
                 offers.$: $
-            Next: RunBatches
+            Next: CheckIfEmpty
+
+          CheckIfEmpty:
+            Type: Choice
+            Choices:
+              - Variable: $.batches
+                IsPresent: false
+                Next: EndExecution
+              - Variable: $.batches
+                IsNull: true
+                Next: EndExecution
+            Default: RunBatches
 
           RunBatches:
             Type: Map
@@ -290,7 +301,10 @@ Resources:
               FunctionName: !Ref JobotAISendEmailFunction
               Payload:
                 new_offers.$: $
-            End: true
+            Next: EndExecution
+          
+          EndExecution:
+            Type: Succeed
 
       Role: !GetAtt JobotAIOrchestratorRole.Arn
 
