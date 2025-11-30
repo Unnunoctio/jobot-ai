@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 
 import boto3
@@ -40,10 +41,12 @@ def handler(event, context):
         updated_offers.append(offer)
 
     # TODO: Guardar las ofertas vistas
+    ttl = int(time.time()) + 7 * 24 * 3600  # 7 days TTL
     with SEEN_OFFERS_TABLE.batch_writer() as batch:
         for offer in updated_offers:
             item = {
                 "url": offer["url"],
+                "ttl": ttl,
                 "title": offer["title"],
                 "created_at": offer["created_at"],
                 "score": offer["score"],

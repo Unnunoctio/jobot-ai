@@ -84,6 +84,9 @@ Resources:
           KeyType: HASH
       SSESpecification:
         SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 
   ########################################
   # S3 BUCKET FOR USER EXPERIENCE
