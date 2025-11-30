@@ -27,20 +27,55 @@ def handler(event, context):
 
 
 def build_html(offers: list[dict]) -> str:
-    html = "<h2>Ofertas de trabajo encontradas</h2><ul>"
+    html = """
+    <div style="font-family: Arial, sans-serif; color: #222; max-width: 600px; margin: auto;">
+        <h2 style="text-align: center; color: #2b6cb0;">Ofertas de trabajo encontradas</h2>
+        <p style="color: #444; text-align: center;">
+            Estas son las oportunidades que coinciden con tu perfil 👇
+        </p>
+        <ul style="list-style: none; padding: 0;">
+    """
+
     for o in offers:
         html += f"""
-        <li>
-            <strong>Título              :</strong> {o["title"]}<br>
-            <strong>Ubicación           :</strong> {o["location"]}<br>
-            <strong>Modalidad           :</strong> {o["modality"]}<br>
-            <strong>Fecha Publicación   :</strong> {o["created_at"]}<br>
-            <strong>N° de postulaciones :</strong> {o["applications"]}<br>
-            <strong>Puntuación IA       :</strong> {o["score"]}<br>
+            <li style="
+                background: #f9fafb;
+                margin-bottom: 15px;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                border-left: 5px solid #2b6cb0;
+            ">
+                <h3 style="margin: 0 0 8px 0; color: #2b6cb0;">{o["title"]}</h3>
 
-            <strong>URL                 :</strong> <a href="{o["url"]}">{o["url"]}</a>
-        </li>
+                <p style="margin: 4px 0;"><strong>Ubicación:</strong> {o["location"]}</p>
+                <p style="margin: 4px 0;"><strong>Modalidad:</strong> {o["modality"]}</p>
+                <p style="margin: 4px 0;"><strong>Fecha Publicación:</strong> {o["created_at"]}</p>
+                <p style="margin: 4px 0;"><strong>N° de Postulaciones:</strong> {o["applications"]}</p>
+                <p style="margin: 4px 0;"><strong>Puntuación IA:</strong> {o["score"]}</p>
+
+                <p style="margin-top: 10px;">
+                    <a href="{o["url"]}" style="
+                        background: #2b6cb0;
+                        color: #fff;
+                        padding: 10px 14px;
+                        text-decoration: none;
+                        border-radius: 6px;
+                        display: inline-block;
+                    ">
+                        Ver oferta
+                    </a>
+                </p>
+            </li>
         """
-    html += "</ul><p>¡Gracias por utilizar Jobot AI!</p>"
+
+    html += """
+        </ul>
+        <p style="margin-top: 20px; text-align: center; color: #555;">
+            ¡Gracias por utilizar <strong>Jobot AI</strong>! 🚀
+        </p>
+    </div>
+    """
 
     return html
+
