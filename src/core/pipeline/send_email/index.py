@@ -11,6 +11,9 @@ def handler(event, context):
     new_offers = event.get("new_offers", [])
     new_offers = [no for sublist in new_offers for no in sublist]
 
+    if not new_offers or len(new_offers) == 0:
+        return "No offers to send"
+
     resend.api_key = RESEND_API_KEY
     params: resend.Emails.SendParams = {
         "from": "Jobot AI <onboarding@resend.dev>",
