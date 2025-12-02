@@ -6,6 +6,10 @@ Parameters:
   ProxyEndpoint:
     Type: String
     Description: Proxy endpoint to pass cloudflare challenge
+  
+  ProxyApiKey:
+    Type: String
+    Description: Proxy API key
 
   AiProvider:
     Type: String
@@ -120,6 +124,7 @@ Resources:
       Environment:
         Variables:
           PROXY_ENDPOINT: !Ref ProxyEndpoint
+          PROXY_API_KEY: !Ref ProxyApiKey
 
   JobotAIGetOnBoardSpiderFunction:
     Type: AWS::Serverless::Function

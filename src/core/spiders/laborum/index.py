@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 
 ## PROXY
 PROXY_ENDPOINT = os.getenv("PROXY_ENDPOINT")
+PROXY_API_KEY = os.getenv("PROXY_API_KEY")
 
 ## SPIDER CONFIG
 BASE_URL = "https://www.laborum.cl/api/avisos/searchV2?pageSize=100&sort=RECIENTES"
@@ -52,10 +53,14 @@ async def get_offers(keywords: list[str], params: dict):
 
 
 async def _fetch_url(session: ClientSession, url: str, body: dict):
-    proxy_body = {"url": url, "method": "POST", "headers": HEADERS, "data": json.dumps(body)}
+    proxy_body = {"url": url, "method": "POST", "headers": HEADERS, "body": json.dumps(body)}
+    proxy_headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": PROXY_API_KEY,
+    }
 
     try:
-        async with session.post(PROXY_ENDPOINT, data=json.dumps(proxy_body)) as response:
+        async with session.post(PROXY_ENDPOINT, data=json.dumps(proxy_body), headers=proxy_headers) as response:
             if response.status != 200:
                 return None
 
