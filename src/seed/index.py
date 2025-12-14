@@ -10,19 +10,21 @@ S3_CLIENT = boto3.client("s3")
 S3_BUCKET_NAME = "jobot-ai"
 
 def seed_config_table():
-    resp = CONFIG_TABLE.scan(Limit=1)
-    if resp.get("Items"):
-        print("Table already seeded")
-        return
+    try:
+        with open("src/seed/seed.json", "r") as f:
+            items = json.load(f)
 
-    with open("src/seed/seed.json", "r") as f:
-        items = json.load(f)
+        with CONFIG_TABLE.batch_writer() as batch:
+            for item in items:
+                # put_item en DynamoDB = INSERT o UPDATE (upsert)
+                batch.put_item(Item=item)
 
-    with CONFIG_TABLE.batch_writer() as batch:
-        for item in items:
-            batch.put_item(Item=item)
+        print(f"Seed ejecutado correctamente ({len(items)} items)")
 
-    print("Seeded successfully")
+    except ClientError as e:
+        print("Error al seedear la tabla:", e)
+    except FileNotFoundError:
+        print("Archivo seed.json no encontrado")
 
 def add_user_experience():
     try:
