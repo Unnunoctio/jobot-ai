@@ -20,7 +20,7 @@ El sistema utiliza una arquitectura totalmente serverless:
 
 ## 🚀 Características Principales
 ### 🔍 Web Scraping Automatizado
-- Spiders independientes para **Laborum** y **GetOnBoard**.
+- Spiders independientes para **Laborum**, **GetOnBoard** y **Trabajando**.
 - Ejecución dinámica definida en la configuración almacenada en DynamoDB.
 
 ### 🧭 Orquestación con Step Functions
