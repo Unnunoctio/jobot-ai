@@ -15,7 +15,11 @@ PROXY_API_KEY = os.getenv("PROXY_API_KEY")
 BASE_URL = "https://www.laborum.cl/api/avisos/searchV2?pageSize=100&sort=RECIENTES"
 JOB_URL = "https://www.laborum.cl/empleos/"
 
-HEADERS = {"Referer": "https://www.laborum.cl/empleos-busqueda.html?recientes=true", "Content-Type": "application/json", "X-Site-Id": "BMCL"}
+HEADERS = {
+    "Referer": "https://www.laborum.cl/empleos-busqueda.html?recientes=true",
+    "Content-Type": "application/json",
+    "X-Site-Id": "BMCL",
+}
 
 
 def handler(event, context):
@@ -53,7 +57,12 @@ async def get_offers(keywords: list[str], params: dict):
 
 
 async def _fetch_url(session: ClientSession, url: str, body: dict):
-    proxy_body = {"url": url, "method": "POST", "headers": HEADERS, "body": json.dumps(body)}
+    proxy_body = {
+        "url": url,
+        "method": "POST",
+        "headers": HEADERS,
+        "body": json.dumps(body),
+    }
     proxy_headers = {
         "Content-Type": "application/json",
         "X-API-Key": PROXY_API_KEY,

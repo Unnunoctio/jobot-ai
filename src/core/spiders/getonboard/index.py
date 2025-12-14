@@ -61,7 +61,6 @@ async def _get_job_urls(session: ClientSession, keyword: str, params: dict) -> l
         return []
 
     min_date = datetime.now() - timedelta(days=int(params["range_days"]))
-    max_date = datetime.now()
 
     job_urls = []
     for job in job_items:
@@ -76,7 +75,7 @@ async def _get_job_urls(session: ClientSession, keyword: str, params: dict) -> l
         year = datetime.now().year
 
         job_date = datetime(year, month, day)
-        if job_date >= min_date and job_date <= max_date:
+        if job_date >= min_date:
             job_urls.append(job.get("href"))
 
     return job_urls
