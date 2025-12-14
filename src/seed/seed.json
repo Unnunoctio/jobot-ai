@@ -38,5 +38,27 @@
 				"range_days": 1
 			}
 		}
+	},
+	{
+		"id": "trabajando",
+		"enabled": true,
+		"lambda_name": "JobotAI-TrabajandoSpiderFunction",
+		"config": {
+			"keywords": [
+				"FullStack Developer",
+				"Backend Developer",
+				"Frontend Developer",
+				"Software Engineer",
+				"Software Developer",
+				"Software Architect",
+				"Software Architect Engineer",
+				"Software Architect Developer"
+			],
+			"params": {
+				"orden": "FECHA_PUBLICACION",
+				"tipoOrden": "DESC",
+				"range_days": 1
+			}
+		}
 	}
 ]

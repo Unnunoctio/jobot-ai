@@ -138,6 +138,18 @@ Resources:
       Timeout: 30
       MemorySize: 1024
 
+  JobotAITrabajandoSpiderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-TrabajandoSpiderFunction
+      CodeUri: src/core/spiders/trabajando
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Timeout: 30
+      MemorySize: 512
+
   ########################################
   # PIPELINE LAMBDAS
   ########################################
