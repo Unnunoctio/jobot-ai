@@ -10,6 +10,7 @@
 				"Frontend Developer",
 				"Software Engineer",
 				"Software Developer",
+				"Software Analyst",
 				"Software Architect",
 				"Software Architect Engineer",
 				"Software Architect Developer"
@@ -49,6 +50,7 @@
 				"Backend Developer",
 				"Frontend Developer",
 				"Software Engineer",
+				"Software Analyst",
 				"Software Developer",
 				"Software Architect",
 				"Software Architect Engineer",
@@ -57,6 +59,25 @@
 			"params": {
 				"orden": "FECHA_PUBLICACION",
 				"tipoOrden": "DESC",
+				"range_days": 1
+			}
+		}
+	},
+	{
+		"id": "bne",
+		"enabled": true,
+		"lambda_name": "JobotAI-BNESpiderFunction",
+		"config": {
+			"keywords": [""],
+			"params": {
+				"idOcupacion": [
+					8037,
+					7638,
+					7643,
+					8003,
+					7641,
+					7640
+				],
 				"range_days": 1
 			}
 		}
