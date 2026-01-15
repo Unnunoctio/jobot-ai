@@ -1,34 +1,36 @@
 import os
 
 import boto3
+from core.config_loader import ConfigLoader
 
-# AWS
-DYNAMODB = boto3.resource("dynamodb")
-CONFIG_TABLE = DYNAMODB.Table(os.getenv("CONFIG_TABLE"))
+# AWS resources
+dynamodb = boto3.resource("dynamodb")
+config_table = dynamodb.Table(os.getenv("CONFIG_TABLE") or "")
 
 
 def handler(event, context):
     """
-    Lee la tabla de configuraciones y retorna una lista de spiders habilidatos.
+    Lambda handler: Load enabled spider configurations from DynamoDB.
+
+    Returns:
+        Dict: { "spiders": [...] } or { "spiders": [], "error": str }
     """
-    response = CONFIG_TABLE.scan()
-    items = response.get("Items", [])
 
-    enabled = []
-    for it in items:
-        if it.get("enabled", True):
-            lambda_name = it.get("lambda_name")
-            if not lambda_name:
-                continue  # Skip if no lambda name
+    try:
+        loader = ConfigLoader(config_table)
+        enabled_spiders = loader.load_enabled_spiders()
 
-            enabled.append(
-                {
-                    "id": it.get("id"),
-                    "lambda_name": lambda_name,
-                    "config": it.get("config", {}),
-                }
-            )
+        if not enabled_spiders:
+            print("No enabled spiders found in configuration")
+        else:
+            print(f"Loaded {len(enabled_spiders)} enabled spider(s): {[s.id for s in enabled_spiders]}")
 
-    return {
-        "spiders": enabled,
-    }
+        return {
+            "spiders": [s.to_dict() for s in enabled_spiders],
+        }
+    except Exception as e:
+        print(f"Error in LoadConfig handler: {e}")
+        return {
+            "spiders": [],
+            "error": str(e),
+        }
