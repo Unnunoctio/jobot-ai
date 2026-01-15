@@ -55,7 +55,6 @@ class ConfigLoader:
 
         return {
             "id": spider_id,
-            "enabled": item.get("enabled", True),
             "lambda_name": lambda_name,
             "config": item.get("config", {}),
         }
