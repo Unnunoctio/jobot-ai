@@ -6,7 +6,7 @@ Parameters:
   ProxyEndpoint:
     Type: String
     Description: Proxy endpoint to pass cloudflare challenge
-  
+
   ProxyApiKey:
     Type: String
     Description: Proxy API key
@@ -109,6 +109,16 @@ Resources:
   ########################################
   # SPIDER LAMBDAS
   ########################################
+  SharedUtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: JobotAI-SharedUtilsLayer
+      Description: Shared utilities for Jobot AI
+      ContentUri: src/shared/
+      CompatibleRuntimes:
+        - python3.14
+      CompatibleArchitectures:
+        - arm64
 
   JobotAILaborumSpiderFunction:
     Type: AWS::Serverless::Function
@@ -119,6 +129,8 @@ Resources:
       Runtime: python3.14
       Architectures:
         - arm64
+      Layers:
+        - !Ref SharedUtilsLayer
       Timeout: 30
       MemorySize: 512
       Environment:
@@ -135,7 +147,9 @@ Resources:
       Runtime: python3.14
       Architectures:
         - arm64
-      Timeout: 30
+      Layers:
+        - !Ref SharedUtilsLayer
+      Timeout: 60
       MemorySize: 1024
 
   JobotAITrabajandoSpiderFunction:
@@ -147,6 +161,8 @@ Resources:
       Runtime: python3.14
       Architectures:
         - arm64
+      Layers:
+        - !Ref SharedUtilsLayer
       Timeout: 30
       MemorySize: 512
 
@@ -319,7 +335,7 @@ Resources:
               Payload:
                 new_offers.$: $
             Next: EndExecution
-          
+
           EndExecution:
             Type: Succeed
 
