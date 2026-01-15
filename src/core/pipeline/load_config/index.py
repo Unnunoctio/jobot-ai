@@ -22,8 +22,6 @@ def handler(event, context):
 
         if not enabled_spiders:
             print("No enabled spiders found in configuration")
-        else:
-            print(f"Loaded {len(enabled_spiders)} enabled spider(s): {[s.id for s in enabled_spiders]}")
 
         return {
             "spiders": [s.to_dict() for s in enabled_spiders],
