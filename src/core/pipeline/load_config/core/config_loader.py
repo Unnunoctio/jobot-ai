@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from botocore.exceptions import ClientError
-from core.models import SpiderConfig
 from mypy_boto3_dynamodb.service_resource import Table
 
 
@@ -11,7 +10,7 @@ class ConfigLoader:
     def __init__(self, table: Table):
         self.table = table
 
-    def load_enabled_spiders(self) -> List[SpiderConfig]:
+    def load_enabled_spiders(self) -> List[Dict[str, Any]]:
         """Load all enabled spider configurations with validation."""
 
         try:
@@ -37,7 +36,7 @@ class ConfigLoader:
             print(f"Unexpected error loading config: {e}")
             raise
 
-    def _validate_and_parse_config(self, item: Dict) -> Optional[SpiderConfig]:
+    def _validate_and_parse_config(self, item: Dict) -> Optional[Dict[str, Any]]:
         """Validate and parse a single spider configuration."""
 
         if not item.get("enabled", True):
@@ -54,14 +53,9 @@ class ConfigLoader:
             print(f"Spider {spider_id} missing lambda name, skipping")
             return None
 
-        try:
-            spider_config = SpiderConfig(
-                id=spider_id,
-                enabled=item.get("enabled", True),
-                lambda_name=lambda_name,
-                config=item.get("config", {}),
-            )
-            return spider_config
-        except Exception as e:
-            print(f"Error creating SpiderConfig for {spider_id}: {e}")
-            return None
+        return {
+            "id": spider_id,
+            "enabled": item.get("enabled", True),
+            "lambda_name": lambda_name,
+            "config": item.get("config", {}),
+        }

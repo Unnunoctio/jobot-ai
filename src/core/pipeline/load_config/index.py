@@ -24,7 +24,7 @@ def handler(event, context):
             print("No enabled spiders found in configuration")
 
         return {
-            "spiders": [s.to_dict() for s in enabled_spiders],
+            "spiders": enabled_spiders,
         }
     except Exception as e:
         print(f"Error in LoadConfig handler: {e}")
