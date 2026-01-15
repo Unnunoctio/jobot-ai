@@ -12,3 +12,8 @@ dependencies = [
     "resend>=2.19.0",
     "ruff>=0.14.11",
 ]
+
+[dependency-groups]
+dev = [
+    "boto3-stubs[dynamodb,s3]>=1.42.28",
+]
