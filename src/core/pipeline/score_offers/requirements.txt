@@ -1,1 +1,2 @@
+boto3-stubs[dynamodb,s3]>=1.42.28
 openai>=2.8.1

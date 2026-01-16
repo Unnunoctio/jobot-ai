@@ -1,106 +1,52 @@
 import os
-import time
-from pathlib import Path
 
 import boto3
-from prompts.user import get_user_prompt
-from providers._iprovider import IProvider
+from core.offer_scorer import OfferScorer
+from core.user_experience_loader import UserExperienceLoader
+from providers.provider_manager import ProviderManager
 
-# AWS
-DYNAMODB = boto3.resource("dynamodb")
-SEEN_OFFERS_TABLE = DYNAMODB.Table(os.getenv("SEEN_OFFERS_TABLE"))
+# AWS Resources
+dynamodb = boto3.resource("dynamodb")
+seen_offers_table = dynamodb.Table(os.getenv("SEEN_OFFERS_TABLE") or "")
 
-S3_CLIENT = boto3.client("s3")
-S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+s3_client = boto3.client("s3")
+s3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME") or ""
 
-# AI
-AI_PROVIDER = os.getenv("AI_PROVIDER")
-AI_API_KEY = os.getenv("AI_API_KEY")
-AI_MODEL = os.getenv("AI_MODEL")
+# AI Configuration
+AI_PROVIDER = os.getenv("AI_PROVIDER") or ""
+AI_API_KEY = os.getenv("AI_API_KEY") or ""
+AI_MODEL = os.getenv("AI_MODEL") or ""
 
-# USER
-USER_EXPERIENCE_FILE = os.getenv("USER_EXPERIENCE_FILE")
-MIN_SCORE = int(os.getenv("MIN_SCORE"))
+# User Configuration
+USER_EXPERIENCE_FILE = os.getenv("USER_EXPERIENCE_FILE") or ""
+MIN_SCORE = int(os.getenv("MIN_SCORE") or "50")
 
 
 def handler(event, context):
-    # TODO: Obtener el batch de ofertas
-    offers = event.get("batch", [])
+    """
+    Lambda handler: Score a batch of job offers using AI.
 
-    # TODO: Obtener el user experience desde S3
-    response = S3_CLIENT.get_object(Bucket=S3_BUCKET_NAME, Key=USER_EXPERIENCE_FILE)
-    user_experience = response["Body"].read().decode("utf-8")
+    Input:
+        event["batch"]: List of job offers to score
 
-    # TODO: Obtener el score de cada oferta
-    offer_scores = rate_offers(offers, user_experience)
+    Returns:
+        List[Dict[str, Any]]: Filtered offers with score
+    """
 
-    # TODO: Actualizar cada oferta con su score
-    updated_offers = []
-    for offer, score in zip(offers, offer_scores):
-        offer["score"] = score
-        updated_offers.append(offer)
-
-    # TODO: Guardar las ofertas vistas
-    ttl = int(time.time()) + 7 * 24 * 3600  # 7 days TTL
-    with SEEN_OFFERS_TABLE.batch_writer() as batch:
-        for offer in updated_offers:
-            item = {
-                "url": offer["url"],
-                "ttl": ttl,
-                "title": offer["title"],
-                "created_at": offer["created_at"],
-                "score": offer["score"],
-            }
-            batch.put_item(Item=item)
-
-    # TODO: Filtrar las ofertas con score mayor a "x"
-    filtered_offers = [
-        {
-            "url": o["url"],
-            "title": o["title"],
-            "location": o["location"],
-            "modality": o["modality"],
-            "created_at": o["created_at"],
-            "applications": o["applications"],
-            "score": o["score"],
-        }
-        for o in updated_offers
-        if o["score"] >= MIN_SCORE
-    ]
-
-    # TODO: Retornar las ofertas filtradas
-    return filtered_offers
-
-
-def rate_offers(offers: list[dict], user_experience: str) -> list[int]:
     try:
-        ai_model = _get_provider()
+        batch = event.get("batch", [])
+        if not batch:
+            print("No offers to score")
+            return []
 
-        path = Path("prompts/system.txt")
-        if not path.exists():
-            raise FileNotFoundError("System prompt not found")
+        user_experience = UserExperienceLoader.load(s3_client, s3_BUCKET_NAME, USER_EXPERIENCE_FILE)
 
-        system_prompt = path.read_text(encoding="utf-8").strip()
-        user_prompt = get_user_prompt(user_experience, offers)
+        provider = ProviderManager.get_ai_provider(AI_PROVIDER, AI_API_KEY, AI_MODEL)
 
-        rates_string = ai_model.generate(system_prompt, user_prompt, temp=1, top_p=0.9)
-        rates_split = rates_string.split(",")
+        scorer = OfferScorer(provider, user_experience, MIN_SCORE, seen_offers_table)
+        filtered_offers = scorer.process_batch(batch)
 
-        return [int(rate.strip()) for rate in rates_split]
-    except ValueError as e:
-        print(e)
+        return filtered_offers
+    except Exception as e:
+        print(f"Error in ScoreOffers handler: {e}")
         return []
-
-
-def _get_provider() -> IProvider:
-    if AI_PROVIDER == "OPENAI":
-        from providers.openai import OpenAIProvider
-
-        return OpenAIProvider(AI_API_KEY, AI_MODEL)
-    elif AI_PROVIDER == "DEEPSEEK":
-        from providers.deepseek import DeepSeekProvider
-
-        return DeepSeekProvider(AI_API_KEY, AI_MODEL)
-    # TODO: Add Others
-    else:
-        raise ValueError(f"Provider {AI_PROVIDER} not supported")
