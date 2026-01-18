@@ -5,6 +5,7 @@ description = "Scrapes jobs and compare with your resume using AI to find the be
 requires-python = ">=3.14"
 dependencies = [
     "aiohttp>=3.13.2",
+    "anthropic>=0.76.0",
     "beautifulsoup4>=4.14.2",
     "black>=25.12.0",
     "boto3>=1.41.3",
