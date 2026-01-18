@@ -120,10 +120,10 @@ Resources:
       CompatibleArchitectures:
         - arm64
 
-  JobotAILaborumSpiderFunction:
+  JobotAISpiderLaborumFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-LaborumSpiderFunction
+      FunctionName: JobotAI-SpiderLaborumFunction
       CodeUri: src/core/spiders/laborum
       Handler: index.handler
       Runtime: python3.14
@@ -138,10 +138,10 @@ Resources:
           PROXY_ENDPOINT: !Ref ProxyEndpoint
           PROXY_API_KEY: !Ref ProxyApiKey
 
-  JobotAIGetOnBoardSpiderFunction:
+  JobotAISpiderGetOnBoardFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-GetOnBoardSpiderFunction
+      FunctionName: JobotAI-SpiderGetOnBoardFunction
       CodeUri: src/core/spiders/getonboard
       Handler: index.handler
       Runtime: python3.14
@@ -152,10 +152,10 @@ Resources:
       Timeout: 60
       MemorySize: 1024
 
-  JobotAITrabajandoSpiderFunction:
+  JobotAISpiderTrabajandoFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-TrabajandoSpiderFunction
+      FunctionName: JobotAI-SpiderTrabajandoFunction
       CodeUri: src/core/spiders/trabajando
       Handler: index.handler
       Runtime: python3.14
@@ -170,10 +170,10 @@ Resources:
   # PIPELINE LAMBDAS
   ########################################
 
-  JobotAILoadConfigFunction:
+  JobotAIPipelineLoadConfigFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-LoadConfigFunction
+      FunctionName: JobotAI-PipelineLoadConfigFunction
       CodeUri: src/core/pipeline/load_config
       Handler: index.handler
       Runtime: python3.14
@@ -188,10 +188,10 @@ Resources:
         Variables:
           CONFIG_TABLE: !Ref SpiderConfigTable
 
-  JobotAIMergeOffersFunction:
+  JobotAIPipelineMergeOffersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-MergeOffersFunction
+      FunctionName: JobotAI-PipelineMergeOffersFunction
       CodeUri: src/core/pipeline/merge_offers
       Handler: index.handler
       Runtime: python3.14
@@ -206,10 +206,10 @@ Resources:
         Variables:
           SEEN_OFFERS_TABLE: !Ref SeenOffersTable
 
-  JobotAIScoreOffersFunction:
+  JobotAIPipelineScoreOffersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-ScoreOffersFunction
+      FunctionName: JobotAI-PipelineScoreOffersFunction
       CodeUri: src/core/pipeline/score_offers
       Handler: index.handler
       Runtime: python3.14
@@ -232,10 +232,10 @@ Resources:
           USER_EXPERIENCE_FILE: !Ref UserExperienceFile
           MIN_SCORE: !Ref MinScore
 
-  JobotAISendEmailFunction:
+  JobotAIPipelineSendEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: JobotAI-SendEmailFunction
+      FunctionName: JobotAI-PipelineSendEmailFunction
       CodeUri: src/core/pipeline/send_email
       Handler: index.handler
       Runtime: python3.14
@@ -266,7 +266,7 @@ Resources:
             Resource: arn:aws:states:::lambda:invoke
             OutputPath: $.Payload
             Parameters:
-              FunctionName: !Ref JobotAILoadConfigFunction
+              FunctionName: !Ref JobotAIPipelineLoadConfigFunction
               Payload: {}
             Next: RunSpiders
 
@@ -293,7 +293,7 @@ Resources:
             Resource: arn:aws:states:::lambda:invoke
             OutputPath: $.Payload
             Parameters:
-              FunctionName: !Ref JobotAIMergeOffersFunction
+              FunctionName: !Ref JobotAIPipelineMergeOffersFunction
               Payload:
                 offers.$: $
             Next: CheckIfEmpty
@@ -321,7 +321,7 @@ Resources:
                   Resource: arn:aws:states:::lambda:invoke
                   OutputPath: $.Payload
                   Parameters:
-                    FunctionName: !Ref JobotAIScoreOffersFunction
+                    FunctionName: !Ref JobotAIPipelineScoreOffersFunction
                     Payload:
                       batch.$: $
                   End: true
@@ -331,7 +331,7 @@ Resources:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              FunctionName: !Ref JobotAISendEmailFunction
+              FunctionName: !Ref JobotAIPipelineSendEmailFunction
               Payload:
                 new_offers.$: $
             Next: EndExecution
@@ -350,7 +350,7 @@ Resources:
     Properties:
       Name: JobotAI-ScheduleTrigger
       Description: Schedule trigger for JobotAI orchestrator at specific hours daily
-      ScheduleExpression: cron(0 11,15,19,23 * * ? *) # 8am, 12pm, 4pm, 8pm Chilean Time (UTC-3) daily
+      ScheduleExpression: cron(0 11,15,19,23 * * ? *)
       State: ENABLED
       Targets:
         - Arn: !Ref JobotAIOrchestrator
