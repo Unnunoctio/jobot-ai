@@ -42,6 +42,22 @@ class TrabajandoSpider(BaseSpider):
 
         return [offer for offer in offers if offer is not None]
 
+    def _format_offer(self, raw_data: dict, **kwargs) -> dict:
+        """Fotmat Trabajando offer data to the standard format"""
+        keyword = kwargs.get("keyword", "")
+
+        return create_standard_offer(
+            url=f"{self.JOB_URL}{keyword.replace(' ', '%20')}/trabajo/{raw_data['idOferta']}",
+            title=raw_data["nombreCargo"],
+            company=raw_data["nombreEmpresaFantasia"],
+            location=raw_data["ubicacion"]["direccion"],
+            modality=raw_data["nombreJornada"],
+            created_at=datetime.strptime(raw_data["fechaPublicacionFormatoIngles"], "%Y-%m-%d").strftime("%d-%m-%Y"),
+            description=f"{raw_data['descripcionOferta']}\n{raw_data['requisitosMinimos']}",
+            applications="n/a",
+            spider="Trabajando",
+        )
+
     # ============= AUX FUNCTIONS =============
 
     def _build_search_url(self, keyword: str) -> str:
@@ -77,19 +93,3 @@ class TrabajandoSpider(BaseSpider):
             return None
 
         return self._format_offer(data, keyword=keyword)
-
-    def _format_offer(self, raw_data: dict, **kwargs) -> dict:
-        """Fotmat Trabajando offer data to the standard format"""
-        keyword = kwargs.get("keyword", "")
-
-        return create_standard_offer(
-            url=f"{self.JOB_URL}{keyword.replace(' ', '%20')}/trabajo/{raw_data['idOferta']}",
-            title=raw_data["nombreCargo"],
-            company=raw_data["nombreEmpresaFantasia"],
-            location=raw_data["ubicacion"]["direccion"],
-            modality=raw_data["nombreJornada"],
-            created_at=datetime.strptime(raw_data["fechaPublicacionFormatoIngles"], "%Y-%m-%d").strftime("%d-%m-%Y"),
-            description=f"{raw_data['descripcionOferta']}\n{raw_data['requisitosMinimos']}",
-            applications="n/a",
-            spider="Trabajando",
-        )

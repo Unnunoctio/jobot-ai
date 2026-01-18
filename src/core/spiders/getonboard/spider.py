@@ -55,8 +55,8 @@ class GetOnBoardSpider(BaseSpider):
             location=location,
             modality=modality,
             created_at=created_at,
-            applications=applications,
             description=description.text.strip() if description else "n/a",
+            applications=applications,
             spider="GetOnBoard",
         )
 
