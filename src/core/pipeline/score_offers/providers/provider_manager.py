@@ -16,6 +16,10 @@ class ProviderManager:
             from providers.deepseek import DeepSeekProvider
 
             return DeepSeekProvider(api_key, model)
+        elif provider_name == "ANTHROPIC":
+            from providers.anthropic import AnthropicProvider
+
+            return AnthropicProvider(api_key, model)
         # TODO: Add Others
         else:
             raise ValueError(f"Unsupported AI provider: {provider_name}")

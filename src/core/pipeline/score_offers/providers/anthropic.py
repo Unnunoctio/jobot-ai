@@ -2,7 +2,7 @@ import anthropic
 from providers._iprovider import IProvider
 
 
-class Anthropic(IProvider):
+class AnthropicProvider(IProvider):
     def __init__(self, api_key: str, model: str):
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
