@@ -11,7 +11,7 @@ S3_BUCKET_NAME = "jobot-ai"
 
 def seed_config_table():
     try:
-        with open("src/seed/seed.json", "r") as f:
+        with open("seed/seed.json", "r") as f:
             items = json.load(f)
 
         with CONFIG_TABLE.batch_writer() as batch:
@@ -41,7 +41,7 @@ def add_user_experience():
 
     try:
         S3_CLIENT.upload_file(
-            "src/seed/user_experience.txt",
+            "seed/user_experience.txt",
             S3_BUCKET_NAME,
             "user_experience.txt",
             ExtraArgs={"ContentType": "text/plain"}

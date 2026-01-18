@@ -2,7 +2,7 @@
 	{
 		"id": "laborum",
 		"enabled": true,
-		"lambda_name": "JobotAI-LaborumSpiderFunction",
+		"lambda_name": "JobotAI-SpiderLaborumFunction",
 		"config": {
 			"keywords": [
 				"FullStack Developer",
@@ -28,7 +28,7 @@
 	{
 		"id": "getonboard",
 		"enabled": true,
-		"lambda_name": "JobotAI-GetOnBoardSpiderFunction",
+		"lambda_name": "JobotAI-SpiderGetOnBoardFunction",
 		"config": {
 			"keywords": [
 				"programacion",
@@ -43,7 +43,7 @@
 	{
 		"id": "trabajando",
 		"enabled": true,
-		"lambda_name": "JobotAI-TrabajandoSpiderFunction",
+		"lambda_name": "JobotAI-SpiderTrabajandoFunction",
 		"config": {
 			"keywords": [
 				"FullStack Developer",
@@ -66,7 +66,7 @@
 	{
 		"id": "bne",
 		"enabled": true,
-		"lambda_name": "JobotAI-BNESpiderFunction",
+		"lambda_name": "JobotAI-SpiderBNEFunction",
 		"config": {
 			"keywords": [""],
 			"params": {

@@ -120,6 +120,20 @@ Resources:
       CompatibleArchitectures:
         - arm64
 
+  JobotAISpiderBNEFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: JobotAI-SpiderBNEFunction
+      CodeUri: src/core/spiders/bne
+      Handler: index.handler
+      Runtime: python3.14
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedUtilsLayer
+      Timeout: 30
+      MemorySize: 512
+
   JobotAISpiderLaborumFunction:
     Type: AWS::Serverless::Function
     Properties:
